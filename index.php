@@ -113,7 +113,7 @@
                               </div>
                           </div>
                       </div>
-                      <a href="index.html">
+                      <a href="index.php">
                           <img class="img-fluid" src="assets/images/logo.png" alt="Theme-Logo"/> <!-- imagen de usuario  DB-->
                       </a>
                       <a class="mobile-options waves-effect waves-light">
@@ -239,26 +239,17 @@
                               <div class="main-menu-content">
                                   <ul>
                                       <li class="more-details">
-                                          <a href="user-profile.html"><i class="ti-user"></i>View Profile</a>
-                                          <a href="#!"><i class="ti-settings"></i>Settings</a>
-                                          <a href="auth-normal-sign-in.html"><i class="ti-layout-sidebar-left"></i>Logout</a>
+                                          <a href="user-profile.html"><i class="ti-user"></i>Ver Perfil</a>
+                                          <a href="#!"><i class="ti-settings"></i>Configuración</a>
+                                          <a href="auth-normal-sign-in.html"><i class="ti-layout-sidebar-left"></i>Salir</a>
                                       </li>
                                   </ul>
                               </div>
                           </div>
-                          <div class="p-15 p-b-0">
-                              <form class="form-material">
-                                  <div class="form-group form-primary">
-                                      <input type="text" name="footer-email" class="form-control" required="">
-                                      <span class="form-bar"></span>
-                                      <label class="float-label"><i class="fa fa-search m-r-10"></i>Search Friend</label>
-                                  </div>
-                              </form>
-                          </div>
                           <div class="pcoded-navigation-label" data-i18n="nav.category.navigation">Layout</div>
                           <ul class="pcoded-item pcoded-left-item">
                               <li class="active">
-                                  <a href="index.html" class="waves-effect waves-dark">
+                                  <a href="index.php" class="waves-effect waves-dark">
                                       <span class="pcoded-micon"><i class="ti-home"></i><b>D</b></span>
                                       <span class="pcoded-mtext" data-i18n="nav.dash.main">Dashboard</span>
                                       <span class="pcoded-mcaret"></span>
@@ -495,11 +486,11 @@
                                                     <div class="card-block">
                                                         <div class="row align-items-center">
                                                             <div class="col-8">
-                                                                <h4 class="text-c-purple">$30,200</h4>
+                                                                <h4 class="text-c-purple">$30,200</h4> <!-- TOTAL TOTAL DB -->
                                                                 <h6 class="text-muted m-b-0">Total</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
-                                                                <i class="fa fa-bar-chart f-28"></i>
+                                                                <i class="ti-money f-28"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -509,7 +500,7 @@
                                                                 <p class="text-white m-b-0">% change</p>
                                                             </div>
                                                             <div class="col-3 text-right">
-                                                                <i class="fa fa-line-chart text-white f-16"></i>
+                                                                <i class="ti-plus text-white f-16"></i>
                                                             </div>
                                                         </div>
             
@@ -525,7 +516,7 @@
                                                                 <h6 class="text-muted m-b-0">Ingresos</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
-                                                                <i class="fa fa-file-text-o f-28"></i>
+                                                                <i class="ti-stats-up f-28"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -535,7 +526,7 @@
                                                                 <p class="text-white m-b-0">% change</p>
                                                             </div>
                                                             <div class="col-3 text-right">
-                                                                <i class="fa fa-line-chart text-white f-16"></i>
+                                                                <i class="ti-plus text-white f-16"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -550,7 +541,7 @@
                                                                 <h6 class="text-muted m-b-0">Egresos</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
-                                                                <i class="fa fa-calendar-check-o f-28"></i>
+                                                                <i class="ti-stats-down f-28"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -560,7 +551,7 @@
                                                                 <p class="text-white m-b-0">% change</p>
                                                             </div>
                                                             <div class="col-3 text-right">
-                                                                <i class="fa fa-line-chart text-white f-16"></i>
+                                                                <i class="ti-plus text-white f-16"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -571,11 +562,11 @@
                                                     <div class="card-block">
                                                         <div class="row align-items-center">
                                                             <div class="col-8">
-                                                                <h4 class="text-c-blue">500</h4>
-                                                                <h6 class="text-muted m-b-0">CAMPO</h6>
+                                                                <h4 class="text-c-blue">$500</h4>
+                                                                <h6 class="text-muted m-b-0">Ahorro mensual</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
-                                                                <i class="fa fa-hand-o-down f-28"></i>
+                                                                <i class="ti-bar-chart-alt f-28"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -585,7 +576,7 @@
                                                                 <p class="text-white m-b-0">% change</p>
                                                             </div>
                                                             <div class="col-3 text-right">
-                                                                <i class="fa fa-line-chart text-white f-16"></i>
+                                                                <i class="ti-plus text-white f-16"></i>
                                                             </div>
                                                         </div>
                                                     </div>
