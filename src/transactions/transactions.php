@@ -1,7 +1,7 @@
 <?php
 // This is a simplified version to show income transactions
-require_once 'config/database.php';
-require_once 'includes/header.php';
+require_once '../../config/database.php';
+require_once '../../includes/header.php';
 
 $conn = getDBConnection();
 $user_id = getCurrentUserId();
@@ -73,5 +73,5 @@ $result = $stmt->get_result();
 <?php
 $stmt->close();
 $conn->close();
-require_once 'includes/footer.php';
+require_once '../../includes/footer.php';
 ?>
