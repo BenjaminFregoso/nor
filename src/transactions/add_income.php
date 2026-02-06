@@ -155,6 +155,25 @@ $conn->close();
                 <!-- Income Form -->
                 <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                     <div class="row">
+                        <!-- Wallet -->
+                        <div class="mb-3">
+                            <label for="wallet_id" class="form-label required-field">Wallet</label>
+                            <select class="form-select" id="wallet_id" name="wallet_id" required>
+                                <option value="">-- Select Wallet --</option>
+                                <?php foreach ($wallets as $wallet): ?>
+                                    <option value="<?php echo $wallet['id']; ?>" 
+                                        <?php echo ($form_data['wallet_id'] == $wallet['id']) ? 'selected' : ''; ?>
+                                        data-balance="<?php echo $wallet['balance']; ?>"
+                                        data-color="<?php echo $wallet['color_code']; ?>">
+                                        <i class="<?php echo $wallet['icon_class']; ?> me-2"></i>
+                                        <?php echo htmlspecialchars($wallet['wallet_name']); ?> 
+                                        (<?php echo $wallet['type_name']; ?>)
+                                        - $<?php echo number_format($wallet['balance'], 2); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
                         <!-- Amount -->
                         <div class="col-md-6 mb-3">
                             <label for="amount" class="form-label required-field">Amount</label>

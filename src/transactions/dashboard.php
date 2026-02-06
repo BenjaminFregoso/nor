@@ -13,6 +13,7 @@ $current_date = date('Y-m-d');
 
 // ==================== CALCULATE KEY METRICS ====================
 
+
 // 1. Total Balance (Income - Expenses)
 $balance_query = "SELECT 
     COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) as total_income,
@@ -87,6 +88,18 @@ $recent_result = $stmt->get_result();
 $recent_transactions = [];
 while ($row = $recent_result->fetch_assoc()) {
     $recent_transactions[] = $row;
+}
+$stmt->close();
+
+// Get wallets summary
+$wallets_summary = [];
+$wallets_query = "SELECT * FROM wallet_summary WHERE user_id = ? ORDER BY is_default DESC, balance DESC";
+$stmt = $conn->prepare($wallets_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$wallets_result = $stmt->get_result();
+while ($row = $wallets_result->fetch_assoc()) {
+    $wallets_summary[] = $row;
 }
 $stmt->close();
 
@@ -755,6 +768,60 @@ $conn->close();
                             <span class="fw-bold"><?php echo count($active_savings); ?></span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallets Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card finance-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-wallet me-2"></i> My Wallets
+                </h5>
+                <a href="wallets.php" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-cog me-1"></i> Manage Wallets
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <?php foreach ($wallets_summary as $wallet): ?>
+                        <div class="col-md-4 mb-3">
+                            <div class="card wallet-card" 
+                                 style="border-left: 5px solid <?php echo $wallet['color_code']; ?>">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="<?php echo $wallet['icon_class']; ?> me-2"></i>
+                                                <?php echo htmlspecialchars($wallet['wallet_name']); ?>
+                                            </h6>
+                                            <small class="text-muted"><?php echo $wallet['type_name']; ?></small>
+                                        </div>
+                                        <?php if ($wallet['is_default']): ?>
+                                            <span class="badge bg-primary">Default</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <h3 class="mt-3 mb-0 <?php echo $wallet['balance'] >= 0 ? 'text-success' : 'text-danger'; ?>">
+                                        $<?php echo number_format($wallet['balance'], 2); ?>
+                                    </h3>
+                                    <div class="mt-2 d-flex justify-content-between">
+                                        <small class="text-muted">
+                                            <i class="fas fa-arrow-up text-success me-1"></i>
+                                            $<?php echo number_format($wallet['total_income'], 2); ?>
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-arrow-down text-danger me-1"></i>
+                                            $<?php echo number_format($wallet['total_expense'], 2); ?>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
