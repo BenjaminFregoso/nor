@@ -26,21 +26,27 @@ $form_data = [
 // Get wallet types
 $wallet_types = getWalletTypes();
 
-// Get user's wallets
-$wallets_query = "SELECT w.*, wt.type_name, wt.icon_class 
-                  FROM wallets w 
-                  JOIN wallet_types wt ON w.wallet_type_id = wt.id 
-                  WHERE w.user_id = ? 
-                  ORDER BY w.is_default DESC, w.created_at DESC";
-$stmt = $conn->prepare($wallets_query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$wallets_result = $stmt->get_result();
-$user_wallets = [];
-while ($row = $wallets_result->fetch_assoc()) {
-    $user_wallets[] = $row;
+// Function to get user wallets
+function getUserWalletsList($conn, $user_id) {
+    $wallets_query = "SELECT w.*, wt.type_name, wt.icon_class 
+                      FROM wallets w 
+                      JOIN wallet_types wt ON w.wallet_type_id = wt.id 
+                      WHERE w.user_id = ? 
+                      ORDER BY w.is_default DESC, w.created_at DESC";
+    $stmt = $conn->prepare($wallets_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $wallets_result = $stmt->get_result();
+    $user_wallets = [];
+    while ($row = $wallets_result->fetch_assoc()) {
+        $user_wallets[] = $row;
+    }
+    $stmt->close();
+    return $user_wallets;
 }
-$stmt->close();
+
+// Get initial user wallets
+$user_wallets = getUserWalletsList($conn, $user_id);
 
 // Process form submission for new wallet
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_wallet') {
@@ -109,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         if ($stmt->execute()) {
             $wallet_id = $stmt->insert_id;
+            $stmt->close();
             
             // If initial balance > 0, create an adjustment transaction
             if ($initial_balance > 0) {
@@ -140,20 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ];
             
             // Refresh wallets list
-            $stmt = $conn->prepare($wallets_query);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $wallets_result = $stmt->get_result();
-            $user_wallets = [];
-            while ($row = $wallets_result->fetch_assoc()) {
-                $user_wallets[] = $row;
-            }
-            $stmt->close();
+            $user_wallets = getUserWalletsList($conn, $user_id);
             
         } else {
             $error_message = "Error creating wallet: " . $stmt->error;
+            $stmt->close();
         }
-        $stmt->close();
     } else {
         $error_message = implode("<br>", $errors);
         // Keep form data for re-filling
@@ -209,15 +208,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
             if ($delete_stmt->execute()) {
                 $success_message = "Wallet deleted successfully!";
                 // Refresh wallets list
-                $stmt = $conn->prepare($wallets_query);
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-                $wallets_result = $stmt->get_result();
-                $user_wallets = [];
-                while ($row = $wallets_result->fetch_assoc()) {
-                    $user_wallets[] = $row;
-                }
-                $stmt->close();
+                $user_wallets = getUserWalletsList($conn, $user_id);
             } else {
                 $error_message = "Error deleting wallet: " . $delete_stmt->error;
             }
@@ -251,15 +242,7 @@ if (isset($_GET['toggle_active']) && is_numeric($_GET['toggle_active'])) {
         $action = $new_status ? "activated" : "deactivated";
         $success_message = "Wallet {$action} successfully!";
         // Refresh wallets list
-        $stmt = $conn->prepare($wallets_query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $wallets_result = $stmt->get_result();
-        $user_wallets = [];
-        while ($row = $wallets_result->fetch_assoc()) {
-            $user_wallets[] = $row;
-        }
-        $stmt->close();
+        $user_wallets = getUserWalletsList($conn, $user_id);
     } else {
         $error_message = "Error updating wallet status.";
     }
@@ -291,15 +274,7 @@ if (isset($_GET['set_default']) && is_numeric($_GET['set_default'])) {
         $conn->commit();
         $success_message = "Default wallet updated successfully!";
         // Refresh wallets list
-        $stmt = $conn->prepare($wallets_query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $wallets_result = $stmt->get_result();
-        $user_wallets = [];
-        while ($row = $wallets_result->fetch_assoc()) {
-            $user_wallets[] = $row;
-        }
-        $stmt->close();
+        $user_wallets = getUserWalletsList($conn, $user_id);
         
     } catch (Exception $e) {
         $conn->rollback();
@@ -704,52 +679,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const colorInput = document.getElementById('color_code');
     const colorPreview = document.getElementById('colorPreview');
     
-    colorInput.addEventListener('input', function() {
-        colorPreview.style.backgroundColor = this.value;
-    });
+    if (colorInput && colorPreview) {
+        colorInput.addEventListener('input', function() {
+            colorPreview.style.backgroundColor = this.value;
+        });
+    }
     
     // Form validation for card numbers
     const cardLastFour = document.getElementById('card_last_four');
     const accountNumber = document.getElementById('account_number');
     
     [cardLastFour, accountNumber].forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').slice(0, 4);
-        });
+        if (input) {
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '').slice(0, 4);
+            });
+        }
     });
     
     // Auto-select icon based on wallet type
     const walletTypeSelect = document.getElementById('wallet_type_id');
     const walletNameInput = document.getElementById('wallet_name');
     
-    walletTypeSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const iconClass = selectedOption.getAttribute('data-icon');
-        
-        // Auto-suggest wallet name based on type
-        if (walletNameInput.value === '' || walletNameInput.value.startsWith('My ')) {
-            const typeName = selectedOption.text.replace(/<[^>]*>/g, '').trim();
-            walletNameInput.value = 'My ' + typeName;
-        }
-    });
-    
-    // Show credit limit field only for credit cards
-    const creditLimitGroup = document.getElementById('credit_limit').closest('.mb-3');
-    
-    function toggleCreditLimit() {
-        const selectedOption = walletTypeSelect.options[walletTypeSelect.selectedIndex];
-        const typeText = selectedOption.text.toLowerCase();
-        
-        if (typeText.includes('credit')) {
-            creditLimitGroup.style.display = 'block';
-        } else {
-            creditLimitGroup.style.display = 'none';
-            document.getElementById('credit_limit').value = '0.00';
-        }
+    if (walletTypeSelect && walletNameInput) {
+        walletTypeSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const iconClass = selectedOption.getAttribute('data-icon');
+            
+            // Auto-suggest wallet name based on type
+            if (walletNameInput.value === '' || walletNameInput.value.startsWith('My ')) {
+                const typeName = selectedOption.text.replace(/<[^>]*>/g, '').trim();
+                walletNameInput.value = 'My ' + typeName;
+            }
+        });
     }
     
-    walletTypeSelect.addEventListener('change', toggleCreditLimit);
-    toggleCreditLimit(); // Initial check
+    // Show credit limit field only for credit cards
+    const creditLimitInput = document.getElementById('credit_limit');
+    if (creditLimitInput && walletTypeSelect) {
+        const creditLimitGroup = creditLimitInput.closest('.mb-3');
+        
+        function toggleCreditLimit() {
+            const selectedOption = walletTypeSelect.options[walletTypeSelect.selectedIndex];
+            const typeText = selectedOption.text.toLowerCase();
+            
+            if (typeText.includes('credit')) {
+                creditLimitGroup.style.display = 'block';
+            } else {
+                creditLimitGroup.style.display = 'none';
+                creditLimitInput.value = '0.00';
+            }
+        }
+        
+        walletTypeSelect.addEventListener('change', toggleCreditLimit);
+        toggleCreditLimit(); // Initial check
+    }
 });
 
 // Confirm wallet deletion
@@ -760,11 +744,14 @@ function confirmDelete(walletId, walletName) {
 }
 
 // Auto-format initial balance
-document.getElementById('initial_balance')?.addEventListener('blur', function() {
-    if (this.value) {
-        this.value = parseFloat(this.value).toFixed(2);
-    }
-});
+const initialBalanceInput = document.getElementById('initial_balance');
+if (initialBalanceInput) {
+    initialBalanceInput.addEventListener('blur', function() {
+        if (this.value) {
+            this.value = parseFloat(this.value).toFixed(2);
+        }
+    });
+}
 </script>
 
 <style>
