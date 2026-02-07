@@ -16,6 +16,7 @@ $form_data = [
     'category_id' => ''
 ];
 
+
 // Get income categories for dropdown
 $categories = [];
 $category_query = "SELECT id, category_name FROM transaction_categories 
@@ -23,12 +24,34 @@ $category_query = "SELECT id, category_name FROM transaction_categories
                    ORDER BY category_name";
 $stmt = $conn->prepare($category_query);
 //$stmt->bind_param("i", $user_id);
+$user_id= 1;
 $stmt->execute();
 $result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $categories[] = $row;
 }
 $stmt->close();
+
+// Function to get user wallets
+function getUserWalletsList($conn, $user_id) {
+    $wallets_query = "SELECT w.*, wt.type_name, wt.icon_class 
+                      FROM wallets w 
+                      JOIN wallet_types wt ON w.wallet_type_id = wt.id 
+                      WHERE w.user_id = ? 
+                      ORDER BY w.is_default DESC, w.created_at DESC";
+    $stmt = $conn->prepare($wallets_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $wallets_result = $stmt->get_result();
+    $user_wallets = [];
+    while ($row = $wallets_result->fetch_assoc()) {
+        $user_wallets[] = $row;
+    }
+    $stmt->close();
+    return $user_wallets;
+}
+// Get initial user wallets
+$wallets = getUserWalletsList($conn, $user_id);
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -162,7 +185,6 @@ $conn->close();
                                 <option value="">-- Select Wallet --</option>
                                 <?php foreach ($wallets as $wallet): ?>
                                     <option value="<?php echo $wallet['id']; ?>" 
-                                        <?php echo ($form_data['wallet_id'] == $wallet['id']) ? 'selected' : ''; ?>
                                         data-balance="<?php echo $wallet['balance']; ?>"
                                         data-color="<?php echo $wallet['color_code']; ?>">
                                         <i class="<?php echo $wallet['icon_class']; ?> me-2"></i>
