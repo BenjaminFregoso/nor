@@ -4,7 +4,8 @@ require_once '../../includes/header.php';
 
 // Get database connection
 $conn = getDBConnection();
-$user_id = getCurrentUserId();
+//$user_id = getCurrentUserId();
+$user_id=1;
 
 // Get current date information
 $current_month = date('m');
